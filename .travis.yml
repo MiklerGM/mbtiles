@@ -1,6 +1,9 @@
 language: node_js
 services:
   - docker
+git:
+  depth: false
+  quiet: true
 install:
   - git clone https://github.com/mapbox/tippecanoe.git tippecanoe
   - cd tippecanoe
@@ -16,7 +19,7 @@ jobs:
       script:
         - docker build --rm -t "${DOCKER_USERNAME}/${TIPPECANOE}:latest" -t "${DOCKER_USERNAME}/${TIPPECANOE}:$(cat ~/release)" .
     - stage: docker push
-      if: branch = master
+      if: branch = master AND type = push
       script:
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         - docker build -t "${DOCKER_USERNAME}/${TIPPECANOE}:latest" -t "${DOCKER_USERNAME}/${TIPPECANOE}:$(cat ~/release)" .

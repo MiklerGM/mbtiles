@@ -1,24 +1,27 @@
+language: node_js
 services:
   - docker
 git:
-  depth: true
+  depth: false
   quiet: true
 install:
   - git clone https://github.com/mapbox/tippecanoe.git tippecanoe
   - cd tippecanoe
-  - git for-each-ref --sort=taggerdate --format '%(creatordate:raw) %(refname)' refs/tags | sort -n | tail -n1 | sed s%.*tags/%% > release
-  - git checkout tags/$(cat release)
-  - echo Building against version
-  - git for-each-ref --sort=taggerdate --format '%(creatordate) %(refname)' refs/tags | grep $(cat release)
+  - git for-each-ref --sort=taggerdate --format '%(creatordate:raw) %(refname)' refs/tags | sort -n | tail -n5
+  - git for-each-ref --sort=taggerdate --format '%(creatordate:raw) %(refname)' refs/tags | sort -n | tail -n1 | sed s%.*tags/%% > ~/release
+  - git checkout tags/$(cat ~/release)
+  - echo Building against version $(cat ~/release)
+  - git for-each-ref --sort=taggerdate --format '%(creatordate) %(refname)' refs/tags | grep $(cat ~/release)
+  - cd ..
 jobs:
   include:
     - stage: docker build
       script:
-        - docker build --rm -t "${DOCKER_USERNAME}/${TIPPECANOE}:latest" -t "${DOCKER_USERNAME}/${TIPPECANOE}:git$(cat tippecanoe/release)" .
+        - docker build --rm -t "${DOCKER_USERNAME}/${TIPPECANOE}:latest" -t "${DOCKER_USERNAME}/${TIPPECANOE}:$(cat ~/release)" .
     - stage: docker push
-      if: branch = master
+      if: branch = master AND type = push
       script:
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker build -t "${DOCKER_USERNAME}/${TIPPECANOE}:latest" -t "${DOCKER_USERNAME}/${TIPPECANOE}:git$(cat tippecanoe/release)" .
+        - docker build -t "${DOCKER_USERNAME}/${TIPPECANOE}:latest" -t "${DOCKER_USERNAME}/${TIPPECANOE}:$(cat ~/release)" .
         - docker push "${DOCKER_USERNAME}/${TIPPECANOE}:latest"
-        - docker push "${DOCKER_USERNAME}/${TIPPECANOE}:git$(cat tippecanoe/release)"
+        - docker push "${DOCKER_USERNAME}/${TIPPECANOE}:$(cat ~/release)"

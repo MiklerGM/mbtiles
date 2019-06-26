@@ -1,0 +1,24 @@
+services:
+  - docker
+git:
+  depth: true
+  quiet: true
+install:
+  - git clone https://github.com/mapbox/tippecanoe.git tippecanoe
+  - cd tippecanoe
+  - git for-each-ref --sort=taggerdate --format '%(creatordate:raw) %(refname)' refs/tags | sort -n | tail -n1 | sed s%.*tags/%% > release
+  - git checkout tags/$(cat release)
+  - echo Building against version
+  - git for-each-ref --sort=taggerdate --format '%(creatordate) %(refname)' refs/tags | grep $(cat release)
+jobs:
+  include:
+    - stage: docker build
+      script:
+        - docker build --rm -t "${DOCKER_USERNAME}/${TIPPECANOE}:latest" -t "${DOCKER_USERNAME}/${TIPPECANOE}:git$(cat tippecanoe/release)" .
+    - stage: docker push
+      if: branch = master
+      script:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker build -t "${DOCKER_USERNAME}/${TIPPECANOE}:latest" -t "${DOCKER_USERNAME}/${TIPPECANOE}:git$(cat tippecanoe/release)" .
+        - docker push "${DOCKER_USERNAME}/${TIPPECANOE}:latest"
+        - docker push "${DOCKER_USERNAME}/${TIPPECANOE}:git$(cat tippecanoe/release)"

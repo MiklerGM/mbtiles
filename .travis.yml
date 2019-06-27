@@ -28,6 +28,6 @@ jobs:
     - stage: mbtiles docker push
       script:
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker build -t "${DOCKER_USERNAME}/{MBTILES}:latest" -f Dockerfile.mbtiles .
+        - docker build -t "${DOCKER_USERNAME}/${MBTILES}:latest" -f Dockerfile.mbtiles .
         - 'if [[ "$TRAVIS_PULL_REQUEST" = "false" && "$TRAVIS_BRANCH" = "master" ]];then
         docker push "${DOCKER_USERNAME}/${MBTILES}:latest"; fi'

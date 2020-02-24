@@ -1,0 +1,5 @@
+FROM morlov/mbtiles-server
+
+LABEL maintainer="Mikhail Orlov <miklergm@gmail.com>"
+
+RUN apk add --no-cache postgresql-client

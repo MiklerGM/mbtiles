@@ -2,19 +2,15 @@ FROM morlov/tippecanoe
 
 LABEL maintainer="Mikhail Orlov <miklergm@gmail.com>"
 
-FROM deniscarriere/mbtiles-server
+FROM morlov/mbtiles-server
 
 COPY --from=0 /usr/bin/tippe* /usr/local/bin/
 COPY --from=0 /usr/bin/tile* /usr/local/bin/
 
-RUN apk add --no-cache libgcc libstdc++ sqlite-libs
+RUN apk add --no-cache libgcc libstdc++ sqlite-libs postgresql-client
 
 # Enables customized options using environment variables
 # Can be used for tippecanoe output
 ENV ZOOM='8'
 
-ENV MBTILES_SERVER_CACHE='/root/mbtiles'
-ENV MBTILES_SERVER_PROTOCOL='http'
-ENV MBTILES_SERVER_DOMAIN='localhost'
-ENV MBTILES_SERVER_PORT='5000'
-ENV MBTILES_SERVER_VERBOSE='true'
+ENV MBTILES_SERVER_WATCH=true
